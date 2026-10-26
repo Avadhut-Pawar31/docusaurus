@@ -54,9 +54,13 @@ jobs:
             run: pnpm lint:spelling
           - name: Syncpack
             run: pnpm lint:syncpack
+          - name: Catalogs
+            run: pnpm lint:catalogs
           - name: Check deduped pnpm-lock.yaml
             run: pnpm lint:deps
           - name: Knip
             run: pnpm lint:knip
+          - name: Knip production
+            run: pnpm lint:knip:production
           - name: Check Formatting
             run: pnpm format:diff
