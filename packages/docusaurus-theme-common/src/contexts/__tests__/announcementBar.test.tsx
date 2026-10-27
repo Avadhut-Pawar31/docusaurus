@@ -93,7 +93,7 @@ describe('announcementBar context', () => {
     );
   });
 
-  it('handles retrocompatibility for misspelled default id', () => {
+  it('handles retrocompatibility for misspelled default id without clearing dismissal or reopening', () => {
     // cSpell:ignore annoucement
     mockAnnouncementBar!.id = 'announcement-bar';
     localStorage.setItem('docusaurus.announcement.dismiss', 'true');
@@ -101,6 +101,60 @@ describe('announcementBar context', () => {
 
     const {result} = renderHook(() => useAnnouncementBar(), {wrapper});
     expect(result.current.isActive).toBe(false);
+    expect(localStorage.getItem('docusaurus.announcement.dismiss')).toBe(
+      'true',
+    );
+    expect(localStorage.getItem('docusaurus.announcement.id')).toBe(
+      'announcement-bar',
+    );
+  });
+
+  it('remains inactive when configured id is explicitly misspelled id and matches stored dismissal', () => {
+    // cSpell:ignore annoucement
+    mockAnnouncementBar!.id = 'annoucement-bar';
+    localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+    localStorage.setItem('docusaurus.announcement.id', 'annoucement-bar');
+
+    const {result} = renderHook(() => useAnnouncementBar(), {wrapper});
+    expect(result.current.isActive).toBe(false);
+    expect(localStorage.getItem('docusaurus.announcement.dismiss')).toBe(
+      'true',
+    );
+    expect(localStorage.getItem('docusaurus.announcement.id')).toBe(
+      'annoucement-bar',
+    );
+  });
+
+  it('is active when configured id is explicitly misspelled id but stored dismissal was default id', () => {
+    // cSpell:ignore annoucement
+    mockAnnouncementBar!.id = 'annoucement-bar';
+    localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+    localStorage.setItem('docusaurus.announcement.id', 'announcement-bar');
+
+    const {result} = renderHook(() => useAnnouncementBar(), {wrapper});
+    expect(result.current.isActive).toBe(true);
+    expect(localStorage.getItem('docusaurus.announcement.dismiss')).toBe(
+      'false',
+    );
+    expect(localStorage.getItem('docusaurus.announcement.id')).toBe(
+      'annoucement-bar',
+    );
+  });
+
+  it('is active when stored dismissal was misspelled id but configured id is different', () => {
+    // cSpell:ignore annoucement
+    mockAnnouncementBar!.id = 'announcement-v2';
+    localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+    localStorage.setItem('docusaurus.announcement.id', 'annoucement-bar');
+
+    const {result} = renderHook(() => useAnnouncementBar(), {wrapper});
+    expect(result.current.isActive).toBe(true);
+    expect(localStorage.getItem('docusaurus.announcement.dismiss')).toBe(
+      'false',
+    );
+    expect(localStorage.getItem('docusaurus.announcement.id')).toBe(
+      'announcement-v2',
+    );
   });
 
   it('dismisses announcement when close() is called', () => {
@@ -229,6 +283,80 @@ describe('announcementBar context', () => {
       );
 
       expect(getByRole('banner')).toBeInTheDocument();
+    });
+
+    it('keeps announcement bar dismissed when legacy misspelled id was dismissed and default id is used', () => {
+      // cSpell:ignore annoucement
+      localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+      localStorage.setItem('docusaurus.announcement.id', 'annoucement-bar');
+
+      mockAnnouncementBar = {
+        id: 'announcement-bar',
+        content: 'Default Announcement Message',
+        isCloseable: true,
+        backgroundColor: '#fff',
+        textColor: '#000',
+      };
+
+      // 1. Inline script runs before React hydration
+      runScript(mockAnnouncementBar);
+      expect(
+        document.documentElement.getAttribute(
+          'data-announcement-bar-initially-dismissed',
+        ),
+      ).toBe('true');
+
+      // 2. React component mounts
+      const {queryByRole} = render(
+        <AnnouncementBarProvider>
+          <AnnouncementBarConsumer />
+        </AnnouncementBarProvider>,
+      );
+
+      expect(queryByRole('banner')).not.toBeInTheDocument();
+      expect(localStorage.getItem('docusaurus.announcement.dismiss')).toBe(
+        'true',
+      );
+      expect(localStorage.getItem('docusaurus.announcement.id')).toBe(
+        'announcement-bar',
+      );
+    });
+
+    it('keeps announcement bar dismissed when configured id is explicitly misspelled id and matches stored dismissal', () => {
+      // cSpell:ignore annoucement
+      localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+      localStorage.setItem('docusaurus.announcement.id', 'annoucement-bar');
+
+      mockAnnouncementBar = {
+        id: 'annoucement-bar',
+        content: 'Legacy Misspelled Announcement Message',
+        isCloseable: true,
+        backgroundColor: '#fff',
+        textColor: '#000',
+      };
+
+      // 1. Inline script runs before React hydration
+      runScript(mockAnnouncementBar);
+      expect(
+        document.documentElement.getAttribute(
+          'data-announcement-bar-initially-dismissed',
+        ),
+      ).toBe('true');
+
+      // 2. React component mounts
+      const {queryByRole} = render(
+        <AnnouncementBarProvider>
+          <AnnouncementBarConsumer />
+        </AnnouncementBarProvider>,
+      );
+
+      expect(queryByRole('banner')).not.toBeInTheDocument();
+      expect(localStorage.getItem('docusaurus.announcement.dismiss')).toBe(
+        'true',
+      );
+      expect(localStorage.getItem('docusaurus.announcement.id')).toBe(
+        'annoucement-bar',
+      );
     });
   });
 });

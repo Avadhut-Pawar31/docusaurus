@@ -25,24 +25,26 @@ const AnnouncementBarDismissStorage = createStorageSlot(
 );
 const IdStorage = createStorageSlot('docusaurus.announcement.id');
 
+// Retrocompatibility due to spelling mistake of default id
+// see https://github.com/facebook/docusaurus/issues/3338
+// cSpell:ignore annoucement
+function isSameId(configuredId: string, storedId: string | null): boolean {
+  return (
+    storedId === configuredId ||
+    (configuredId === 'announcement-bar' && storedId === 'annoucement-bar')
+  );
+}
+
 const isDismissedInStorage = (
   announcementBar?: ThemeConfig['announcementBar'],
 ): boolean => {
   if (!announcementBar || announcementBar.isCloseable === false) {
     return false;
   }
-  let viewedId = IdStorage.get();
-
-  // Retrocompatibility due to spelling mistake of default id
-  // see https://github.com/facebook/docusaurus/issues/3338
-  // cSpell:ignore annoucement
-  if (viewedId === 'annoucement-bar') {
-    viewedId = 'announcement-bar';
-  }
 
   return (
     AnnouncementBarDismissStorage.get() === 'true' &&
-    viewedId === announcementBar.id
+    isSameId(announcementBar.id, IdStorage.get())
   );
 };
 const setDismissedInStorage = (bool: boolean) =>
@@ -85,9 +87,8 @@ function useContextValue(): ContextValue {
       return;
     }
     const {id} = announcementBar;
-
-    const viewedId = IdStorage.get();
-    const isNewAnnouncement = id !== viewedId;
+    const storedId = IdStorage.get();
+    const isNewAnnouncement = !isSameId(id, storedId);
 
     IdStorage.set(id);
 

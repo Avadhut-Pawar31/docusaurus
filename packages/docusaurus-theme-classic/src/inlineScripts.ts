@@ -108,13 +108,14 @@ export function getAnnouncementBarInlineScript({
         return false;
       }
       var storedId = localStorage.getItem('${AnnouncementBarIdStorageKey}');
-      // Retrocompatibility due to spelling mistake of default id
+      ${
+        id === 'announcement-bar'
+          ? `// Retrocompatibility due to spelling mistake of default id
       // see https://github.com/facebook/docusaurus/issues/3338
       // cSpell:ignore annoucement
-      if (storedId === 'annoucement-bar') {
-        storedId = 'announcement-bar';
-      }
-      return storedId === ${JSON.stringify(id)};`
+      return storedId === ${JSON.stringify(id)} || storedId === 'annoucement-bar';`
+          : `return storedId === ${JSON.stringify(id)};`
+      }`
       }
     } catch (err) {}
     return false;

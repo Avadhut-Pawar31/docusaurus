@@ -151,6 +151,57 @@ describe('inlineScripts', () => {
       ).toBe('true');
     });
 
+    it('sets attribute to true when configured id is explicitly misspelled id and matches stored dismissal', () => {
+      // cSpell:ignore annoucement
+      localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+      localStorage.setItem('docusaurus.announcement.id', 'annoucement-bar');
+
+      const script = getAnnouncementBarInlineScript({
+        siteStorage: {type: 'localStorage', namespace: ''},
+        announcementBar: {id: 'annoucement-bar', isCloseable: true},
+      });
+      runScript(script);
+      expect(
+        document.documentElement.getAttribute(
+          'data-announcement-bar-initially-dismissed',
+        ),
+      ).toBe('true');
+    });
+
+    it('sets attribute to false when configured id is explicitly misspelled id but stored id is default id', () => {
+      // cSpell:ignore annoucement
+      localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+      localStorage.setItem('docusaurus.announcement.id', 'announcement-bar');
+
+      const script = getAnnouncementBarInlineScript({
+        siteStorage: {type: 'localStorage', namespace: ''},
+        announcementBar: {id: 'annoucement-bar', isCloseable: true},
+      });
+      runScript(script);
+      expect(
+        document.documentElement.getAttribute(
+          'data-announcement-bar-initially-dismissed',
+        ),
+      ).toBe('false');
+    });
+
+    it('sets attribute to false when stored dismissal is misspelled id but configured id is different', () => {
+      // cSpell:ignore annoucement
+      localStorage.setItem('docusaurus.announcement.dismiss', 'true');
+      localStorage.setItem('docusaurus.announcement.id', 'annoucement-bar');
+
+      const script = getAnnouncementBarInlineScript({
+        siteStorage: {type: 'localStorage', namespace: ''},
+        announcementBar: {id: 'announcement-v2', isCloseable: true},
+      });
+      runScript(script);
+      expect(
+        document.documentElement.getAttribute(
+          'data-announcement-bar-initially-dismissed',
+        ),
+      ).toBe('false');
+    });
+
     it('sets attribute to false when isCloseable is false even if dismissal is stored', () => {
       localStorage.setItem('docusaurus.announcement.dismiss', 'true');
       localStorage.setItem('docusaurus.announcement.id', 'announcement-v1');

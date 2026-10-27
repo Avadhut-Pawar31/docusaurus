@@ -8,12 +8,6 @@ exports[`inlineScripts > getAnnouncementBarInlineScript > matches snapshot for c
         return false;
       }
       var storedId = localStorage.getItem('docusaurus.announcement.id');
-      // Retrocompatibility due to spelling mistake of default id
-      // see https://github.com/facebook/docusaurus/issues/3338
-      // cSpell:ignore annoucement
-      if (storedId === 'annoucement-bar') {
-        storedId = 'announcement-bar';
-      }
       return storedId === "announcement-v2";
     } catch (err) {}
     return false;
@@ -33,10 +27,7 @@ exports[`inlineScripts > getAnnouncementBarInlineScript > matches snapshot for d
       // Retrocompatibility due to spelling mistake of default id
       // see https://github.com/facebook/docusaurus/issues/3338
       // cSpell:ignore annoucement
-      if (storedId === 'annoucement-bar') {
-        storedId = 'announcement-bar';
-      }
-      return storedId === "announcement-bar";
+      return storedId === "announcement-bar" || storedId === 'annoucement-bar';
     } catch (err) {}
     return false;
   }
@@ -53,6 +44,17 @@ exports[`inlineScripts > getAnnouncementBarInlineScript > matches snapshot for n
     return false;
   }
   document.documentElement.setAttribute('data-announcement-bar-initially-dismissed', isDismissed());
+})();"
+`;
+
+exports[`inlineScripts > inline javascript for default mode and no switch 1`] = `
+"(function() {
+  function getSystemColorMode() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  var initialTheme;
+  document.documentElement.setAttribute('data-theme', initialTheme || 'light');
+  document.documentElement.setAttribute('data-theme-choice', initialTheme || 'light');
 })();"
 `;
 
